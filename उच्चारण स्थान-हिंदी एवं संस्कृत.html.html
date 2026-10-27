@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>हिंदी वर्णमाला एवं उच्चारण स्थान संवादात्मक अध्ययन यंत्र</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif;
+      background-color: #f1f5f9;
+    }
+    /* Dim inactive organs so the active one stands out sharply from a distance */
+    .organ-zone {
+      transition: all 0.25s ease;
+      cursor: pointer;
+      opacity: 0.28;
+    }
+    .organ-zone:hover {
+      opacity: 0.75;
+      filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+    }
+    /* High-visibility active organ state for classroom viewing */
+    .organ-zone.active-zone {
+      opacity: 1 !important;
+      animation: pulse-glow 0.9s infinite alternate;
+    }
+    @keyframes pulse-glow {
+      0% {
+        filter: drop-shadow(0 0 8px var(--glow-color, #ef4444)) drop-shadow(0 0 16px #facc15);
+        transform: scale(1);
+      }
+      100% {
+        filter: drop-shadow(0 0 20px var(--glow-color, #ef4444)) drop-shadow(0 0 32px #facc15);
+        transform: scale(1.02);
+      }
+    }
+    /* Animated spotlight box & radar ring inside SVG */
+    .spotlight-box {
+      animation: box-flash 0.8s infinite alternate;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+    @keyframes box-flash {
+      0% {
+        stroke-width: 4px;
+        stroke: #ffffff;
+        fill-opacity: 0.35;
+      }
+      100% {
+        stroke-width: 7px;
+        stroke: #fde047;
+        fill-opacity: 0.65;
+      }
+    }
+    .radar-ring {
+      animation: radar-expand 1.4s infinite ease-out;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+    @keyframes radar-expand {
+      0% {
+        transform: scale(0.6);
+        opacity: 1;
+        stroke-width: 6px;
+      }
+      100% {
+        transform: scale(1.9);
+        opacity: 0;
+        stroke-width: 1px;
+      }
+    }
+    .callout-badge {
+      animation: badge-bounce 0.8s infinite alternate ease-in-out;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+    @keyframes badge-bounce {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.08); }
+    }
+    /* Big classroom banner pulse */
+    .classroom-banner-pulse {
+      animation: banner-pulse 1.2s infinite alternate;
+    }
+    @keyframes banner-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7), 0 8px 20px -4px rgba(0, 0, 0, 0.25); }
+      100% { box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.95), 0 12px 28px -4px rgba(0, 0, 0, 0.35); }
+    }
+    .key-cap {
+      box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 3px 6px rgba(0,0,0,0.06);
+      transition: all 0.15s ease;
+    }
+    .key-cap:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .key-cap:active, .key-cap.key-active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg sticky top-0 z-30 border-b-2 border-amber-400">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-xl bg-amber-400 flex items-center justify-center font-black text-2xl text-slate-950 shadow-md border-2 border-white">
+          क
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white">हिंदी उच्चारण स्थान संवादात्मक यंत्र (स्मार्ट-क्लास संस्करण)</h1>
+          <p class="text-xs text-amber-200 font-medium">मानव वाग्यंत्र (Vocal Tract) व देवनागरी इनस्क्रिप्ट (InScript) कीबोर्ड अध्ययन प्रणाली</p>
+        </div>
+      </div>
+
+      <!-- Controls Header -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="btnVoiceToggle" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white text-xs font-bold flex items-center gap-1.5 transition shadow">
+          <span id="voiceIcon">🔊</span>
+          <span id="voiceStatusText">उच्चारण: चालू</span>
+        </button>
+
+        <button id="btnToggleKeyHints" class="px-3 py-1.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 border border-indigo-400 text-white text-xs font-bold flex items-center gap-1.5 transition shadow">
+          <span>⌨️</span>
+          <span id="keyHintStatusText">InScript कुंजियाँ: चालू</span>
+        </button>
+
+        <button id="btnOpenInscriptGuide" class="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs transition flex items-center gap-1 shadow">
+          <span>📖</span>
+          <span>इनस्क्रिप्ट लेआउट देखें</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto px-4 py-4 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: High-Contrast Classroom Anatomy Diagram & Big Boxes (5 cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-4">
+      
+      <!-- Vocal Tract SVG Card -->
+      <div class="bg-white rounded-2xl shadow-md border-2 border-slate-300 p-4 flex flex-col">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+          <div>
+            <h2 class="font-extrabold text-slate-900 text-base md:text-lg flex items-center gap-2">
+              <span class="inline-block w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
+              मानव वाग्यंत्र (उच्चारण स्थान आरेख)
+            </h2>
+          </div>
+          <span id="activeOrgansCount" class="text-sm font-extrabold px-3 py-1 bg-amber-300 text-slate-950 rounded-lg border-2 border-slate-900 shadow-sm">
+            तैयार
+          </span>
+        </div>
+
+        <!-- BIG CLASSROOM HIGHLIGHT BANNER (दूर बैठे बच्चों के लिए बड़ा रंगीन डिस्प्ले बॉक्स) -->
+        <div id="classroomHighlightBanner" class="mt-3 p-3 rounded-2xl bg-purple-700 text-white border-4 border-yellow-300 classroom-banner-pulse flex items-center justify-between gap-3 transition-colors duration-200">
+          <div class="flex items-center gap-3">
+            <div id="bannerCharBox" class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-yellow-300 text-slate-950 font-black text-3xl sm:text-4xl flex items-center justify-center border-2 border-slate-950 shadow-inner flex-shrink-0">
+              क
+            </div>
+            <div>
+              <div class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-yellow-200">सक्रिय उच्चारण स्थान (Active Place):</div>
+              <div id="bannerPlaceTitle" class="text-xl sm:text-2xl font-black tracking-wide leading-tight text-white drop-shadow">
+                कण्ठ्य (गला / कण्ठ)
+              </div>
+            </div>
+          </div>
+          <div class="hidden sm:flex flex-col items-end text-right">
+            <span class="px-2.5 py-1 rounded-lg bg-black/30 text-yellow-300 font-extrabold text-xs border border-yellow-300/50">
+              🎯 हाईलाइट सक्रिय
+            </span>
+          </div>
+        </div>
+
+        <!-- High-Contrast Dark SVG Container so bright neon boxes pop out across the classroom -->
+        <div class="relative w-full aspect-square max-h-[400px] my-3 bg-slate-900 rounded-2xl border-4 border-slate-800 flex items-center justify-center p-2 overflow-hidden shadow-inner">
+          
+          <svg id="vocalTractSvg" viewBox="0 0 540 500" class="w-full h-full select-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Gradients for Head and Tissues (High contrast on dark canvas) -->
+              <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fde68a" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#fca5a5" stop-opacity="0.18" />
+              </linearGradient>
+              <linearGradient id="tissueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f87171" stop-opacity="0.5" />
+                <stop offset="100%" stop-color="#fb923c" stop-opacity="0.3" />
+              </linearGradient>
+              <linearGradient id="tongueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#fb7185" stop-opacity="0.45" />
+                <stop offset="100%" stop-color="#e11d48" stop-opacity="0.35" />
+              </linearGradient>
+              <!-- Filter for intense classroom glow effect -->
+              <filter id="glowFilter" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="7" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Background Anatomical Outline (Head Sagittal Profile) -->
+            <path d="M 340 25 
+                     C 225 25, 165 75, 155 138 
+                     L 135 188 
+                     L 95 218 
+                     L 135 235 
+                     C 140 240, 140 248, 125 252 
+                     C 140 262, 140 270, 130 285 
+                     C 120 315, 125 340, 160 370 
+                     C 180 390, 190 410, 195 480 
+                     L 390 480 
+                     C 390 380, 400 260, 400 190 
+                     C 400 110, 390 25, 340 25 Z" 
+                  fill="url(#skinGrad)" stroke="#94a3b8" stroke-width="3" />
+
+            <!-- Brain / Skull mass outline -->
+            <path d="M 185 138 C 195 68, 325 58, 355 128 C 375 168, 365 218, 325 218 C 265 218, 215 198, 185 138 Z" 
+                  fill="#334155" fill-opacity="0.4" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4" />
+
+            <!-- Nasal Cavity Airway -->
+            <path d="M 120 225 C 135 200, 175 180, 245 180 C 295 180, 315 200, 320 240 L 295 240 C 280 210, 235 210, 165 218 Z" 
+                  fill="#1e293b" stroke="#64748b" stroke-width="2" />
+
+            <!-- Pharynx & Trachea Airway (कण्ठनली व ग्रसनी) -->
+            <path d="M 320 240 C 320 280, 325 330, 325 480 L 295 480 C 295 390, 290 340, 290 300 C 290 270, 285 260, 280 250 Z" 
+                  fill="#1e293b" stroke="#64748b" stroke-width="2" />
+
+            <!-- Hard Palate Bone Outline (तालु की हड्डी) -->
+            <path d="M 165 218 C 215 210, 255 210, 275 230 C 265 238, 235 235, 180 242 Z" 
+                  fill="#475569" stroke="#94a3b8" stroke-width="1.5" />
+
+            <!-- Tongue Body (जिह्वा) -->
+            <path id="tongueBody" d="M 170 290 
+                     C 195 270, 235 255, 275 275 
+                     C 290 295, 285 340, 275 380 
+                     C 235 380, 195 355, 170 290 Z" 
+                  fill="url(#tongueGrad)" stroke="#fb7185" stroke-width="2.5" />
+            <text x="235" y="335" font-size="13" font-weight="bold" fill="#fda4af" text-anchor="middle" opacity="0.8">जिह्वा (जीभ)</text>
+
+            <!-- Teeth (Upper and Lower) -->
+            <rect x="160" y="242" width="12" height="15" rx="2" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" />
+            <rect x="164" y="274" width="12" height="14" rx="2" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" />
+
+            <!-- ================= INTERACTIVE ZONES WITH HIGH-VISIBILITY BOXES ================= -->
+
+            <!-- 1. नासिका (Nasal Cavity / Nose) - Bright Cyan/Yellow -->
+            <g id="zone-nasika" class="organ-zone" data-name="नासिका (Nose / Nasal Cavity)" data-color="#00f5d4">
+              <path d="M 120 220 C 135 195, 180 175, 255 175 C 290 175, 310 190, 317 225 C 295 220, 265 205, 225 205 C 170 205, 140 220, 120 220 Z" 
+                    fill="#06b6d4" fill-opacity="0.35" stroke="#22d3ee" stroke-width="3" stroke-linecap="round" />
+              
+              <!-- Base label when dim -->
+              <circle cx="215" cy="195" r="6" fill="#22d3ee" />
+              <text x="215" y="155" font-size="14" font-weight="bold" fill="#67e8f9" text-anchor="middle">नासिका (नाक)</text>
+
+              <!-- HIGH-VISIBILITY ACTIVE HIGHLIGHT BOX & CALLOUT -->
+              <g class="zone-highlight hidden">
+                <!-- Glowing Box around Nasal Area -->
+                <rect x="112" y="168" width="210" height="62" rx="12" fill="#06b6d4" class="spotlight-box" />
+                <circle cx="215" cy="195" r="24" fill="none" stroke="#fde047" class="radar-ring" />
+                <circle cx="215" cy="195" r="10" fill="#fde047" stroke="#000" stroke-width="2.5" />
+                <!-- Big Callout Box at Top -->
+                <g class="callout-badge">
+                  <rect x="115" y="95" width="200" height="46" rx="10" fill="#0891b2" stroke="#fde047" stroke-width="4" />
+                  <text x="215" y="125" font-size="21" font-weight="900" fill="#ffffff" text-anchor="middle">१. नासिका (नाक)</text>
+                </g>
+                <line x1="215" y1="141" x2="215" y2="185" stroke="#fde047" stroke-width="5" />
+              </g>
+            </g>
+
+            <!-- 2. मूर्धा (Murdha / Hard Palate Roof / Alveolar Ridge) - Vivid Neon Green -->
+            <g id="zone-murdha" class="organ-zone" data-name="मूर्धा (Hard Palate Ridge / Roof)" data-color="#22c55e">
+              <path d="M 182 240 C 198 228, 224 224, 244 230" 
+                    fill="none" stroke="#4ade80" stroke-width="6" stroke-linecap="round" />
+              <circle cx="212" cy="230" r="6" fill="#4ade80" />
+              <text x="215" y="65" font-size="14" font-weight="bold" fill="#86efac" text-anchor="middle">मूर्धा (छत का अगला भाग)</text>
+
+              <!-- HIGH-VISIBILITY ACTIVE HIGHLIGHT BOX & CALLOUT -->
+              <g class="zone-highlight hidden">
+                <!-- Glowing Box around Murdha -->
+                <rect x="175" y="212" width="75" height="38" rx="10" fill="#16a34a" class="spotlight-box" />
+                <circle cx="212" cy="230" r="24" fill="none" stroke="#fde047" class="radar-ring" />
+                <circle cx="212" cy="230" r="10" fill="#fde047" stroke="#000" stroke-width="2.5" />
+                <!-- Big Callout Box -->
+                <g class="callout-badge">
+                  <rect x="115" y="35" width="220" height="48" rx="10" fill="#15803d" stroke="#fde047" stroke-width="4" />
+                  <text x="225" y="66" font-size="21" font-weight="900" fill="#ffffff" text-anchor="middle">३. मूर्धा (मूर्धन्य)</text>
+                </g>
+                <line x1="220" y1="83" x2="212" y2="218" stroke="#fde047" stroke-width="5" stroke-dasharray="6,3" />
+              </g>
+            </g>
+
+            <!-- 3. तालु (Talu / Hard Palate) - Vivid Electric Blue -->
+            <g id="zone-talu" class="organ-zone" data-name="तालु (Hard Palate)" data-color="#38bdf8">
+              <path d="M 240 230 C 260 235, 275 245, 285 258" 
+                    fill="none" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" />
+              <circle cx="265" cy="242" r="6" fill="#38bdf8" />
+              <text x="415" y="150" font-size="14" font-weight="bold" fill="#7dd3fc" text-anchor="middle">तालु (कठोर तालु)</text>
+
+              <!-- HIGH-VISIBILITY ACTIVE HIGHLIGHT BOX & CALLOUT -->
+              <g class="zone-highlight hidden">
+                <!-- Glowing Box around Talu -->
+                <rect x="232" y="218" width="65" height="48" rx="10" fill="#0284c7" class="spotlight-box" />
+                <circle cx="265" cy="242" r="24" fill="none" stroke="#fde047" class="radar-ring" />
+                <circle cx="265" cy="242" r="10" fill="#fde047" stroke="#000" stroke-width="2.5" />
+                <!-- Big Callout Box -->
+                <g class="callout-badge">
+                  <rect x="310" y="105" width="215" height="48" rx="10" fill="#0369a1" stroke="#fde047" stroke-width="4" />
+                  <text x="417" y="136" font-size="21" font-weight="900" fill="#ffffff" text-anchor="middle">२. तालु (तालव्य)</text>
+                </g>
+                <line x1="360" y1="153" x2="273" y2="235" stroke="#fde047" stroke-width="5" />
+              </g>
+            </g>
+
+            <!-- 4. कण्ठ (Kanth / Throat & Larynx) - Vivid Magenta / Purple -->
+            <g id="zone-kanth" class="organ-zone" data-name="कण्ठ (Throat / Glottal / Velar)" data-color="#c084fc">
+              <!-- Soft Palate & Uvula -->
+              <path d="M 285 258 C 295 268, 303 280, 300 295 C 297 305, 293 305, 293 295" 
+                    fill="#c084fc" fill-opacity="0.4" stroke="#c084fc" stroke-width="3.5" stroke-linecap="round" />
+              <!-- Larynx / Vocal Cords -->
+              <ellipse cx="309" cy="415" rx="18" ry="28" fill="#a855f7" fill-opacity="0.4" stroke="#c084fc" stroke-width="3.5" />
+              <circle cx="309" cy="415" r="6" fill="#e879f9" />
+              <text x="435" y="420" font-size="14" font-weight="bold" fill="#d8b4fe" text-anchor="middle">कण्ठ (गला)</text>
+
+              <!-- HIGH-VISIBILITY ACTIVE HIGHLIGHT BOX & CALLOUT -->
+              <g class="zone-highlight hidden">
+                <!-- Glowing Box around Throat/Kanth -->
+                <rect x="278" y="372" width="62" height="86" rx="14" fill="#9333ea" class="spotlight-box" />
+                <circle cx="309" cy="415" r="28" fill="none" stroke="#fde047" class="radar-ring" />
+                <circle cx="309" cy="415" r="11" fill="#fde047" stroke="#000" stroke-width="2.5" />
+                <!-- Big Callout Box -->
+                <g class="callout-badge">
+                  <rect x="335" y="320" width="195" height="52" rx="10" fill="#7e22ce" stroke="#fde047" stroke-width="4" />
+                  <text x="432" y="353" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">१. कण्ठ (गला)</text>
+                </g>
+                <line x1="395" y1="372" x2="322" y2="408" stroke="#fde047" stroke-width="5" />
+              </g>
+            </g>
+
+            <!-- 5. दन्त (Dant / Teeth) - Vivid Orange / Amber -->
+            <g id="zone-dant" class="organ-zone" data-name="दन्त (Teeth / Dental)" data-color="#f59e0b">
+              <rect x="155" y="238" width="24" height="54" rx="5" fill="#f59e0b" fill-opacity="0.35" stroke="#fbbf24" stroke-width="3" />
+              <circle cx="167" cy="265" r="6" fill="#fbbf24" />
+              <text x="65" y="268" font-size="14" font-weight="bold" fill="#fcd34d" text-anchor="middle">दन्त (दाँत)</text>
+
+              <!-- HIGH-VISIBILITY ACTIVE HIGHLIGHT BOX & CALLOUT -->
+              <g class="zone-highlight hidden">
+                <!-- Glowing Box around Teeth -->
+                <rect x="148" y="232" width="38" height="66" rx="8" fill="#d97706" class="spotlight-box" />
+                <circle cx="167" cy="265" r="24" fill="none" stroke="#fde047" class="radar-ring" />
+                <circle cx="167" cy="265" r="10" fill="#fde047" stroke="#000" stroke-width="2.5" />
+                <!-- Big Callout Box -->
+                <g class="callout-badge">
+                  <rect x="8" y="165" width="165" height="48" rx="10" fill="#d97706" stroke="#fde047" stroke-width="4" />
+                  <text x="90" y="196" font-size="21" font-weight="900" fill="#ffffff" text-anchor="middle">४. दन्त (दाँत)</text>
+                </g>
+                <line x1="115" y1="213" x2="160" y2="256" stroke="#fde047" stroke-width="5" />
+              </g>
+            </g>
+
+            <!-- 6. ओष्ठ (Oshth / Lips) - Bright Crimson Red -->
+            <g id="zone-oshth" class="organ-zone" data-name="ओष्ठ (Lips / Labial)" data-color="#f43f5e">
+              <!-- Upper & Lower Lip -->
+              <path d="M 122 250 C 137 248, 150 245, 158 245" fill="none" stroke="#fb7185" stroke-width="6" stroke-linecap="round" />
+              <path d="M 127 285 C 140 280, 152 275, 160 275" fill="none" stroke="#fb7185" stroke-width="6" stroke-linecap="round" />
+              <circle cx="135" cy="266" r="6" fill="#f43f5e" />
+              <text x="65" y="340" font-size="14" font-weight="bold" fill="#fda4af" text-anchor="middle">ओष्ठ (होंठ)</text>
+
+              <!-- HIGH-VISIBILITY ACTIVE HIGHLIGHT BOX & CALLOUT -->
+              <g class="zone-highlight hidden">
+                <!-- Glowing Box around Lips -->
+                <rect x="110" y="236" width="48" height="60" rx="12" fill="#e11d48" class="spotlight-box" />
+                <circle cx="135" cy="266" r="25" fill="none" stroke="#fde047" class="radar-ring" />
+                <circle cx="135" cy="266" r="10" fill="#fde047" stroke="#000" stroke-width="2.5" />
+                <!-- Big Callout Box -->
+                <g class="callout-badge">
+                  <rect x="10" y="395" width="175" height="50" rx="10" fill="#be123c" stroke="#fde047" stroke-width="4" />
+                  <text x="97" y="427" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">५. ओष्ठ (होंठ)</text>
+                </g>
+                <line x1="105" y1="395" x2="132" y2="278" stroke="#fde047" stroke-width="5" />
+              </g>
+            </g>
+
+            <!-- Tongue active movement indicator dot -->
+            <circle id="tongueIndicator" cx="220" cy="290" r="5" fill="#fde047" opacity="0.85" />
+          </svg>
+        </div>
+
+        <!-- 6 LARGE CLASSROOM INDICATOR BOXES (पीछे बैठे बच्चों को स्पष्ट दिखने वाले 6 बड़े बॉक्स) -->
+        <div class="pt-2 border-t border-slate-200">
+          <div class="text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span>उच्चारण स्थान संकेतक बॉक्स (क्लिक करके भी देखें):</span>
+            <span class="text-[11px] text-indigo-600 font-bold">सक्रिय बॉक्स बड़ा और रंगीन हो जाएगा</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            
+            <div id="box-zone-kanth" data-zone="zone-kanth" class="organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 flex items-center gap-2 transition-all duration-200">
+              <span class="status-dot w-4 h-4 rounded-full bg-purple-600 flex-shrink-0 border border-white"></span>
+              <span class="font-extrabold text-sm md:text-base truncate">१. कण्ठ्य (गला)</span>
+            </div>
+
+            <div id="box-zone-talu" data-zone="zone-talu" class="organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 flex items-center gap-2 transition-all duration-200">
+              <span class="status-dot w-4 h-4 rounded-full bg-sky-600 flex-shrink-0 border border-white"></span>
+              <span class="font-extrabold text-sm md:text-base truncate">२. तालव्य (तालु)</span>
+            </div>
+
+            <div id="box-zone-murdha" data-zone="zone-murdha" class="organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 flex items-center gap-2 transition-all duration-200">
+              <span class="status-dot w-4 h-4 rounded-full bg-emerald-600 flex-shrink-0 border border-white"></span>
+              <span class="font-extrabold text-sm md:text-base truncate">३. मूर्धन्य (मूर्धा)</span>
+            </div>
+
+            <div id="box-zone-dant" data-zone="zone-dant" class="organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 flex items-center gap-2 transition-all duration-200">
+              <span class="status-dot w-4 h-4 rounded-full bg-amber-600 flex-shrink-0 border border-white"></span>
+              <span class="font-extrabold text-sm md:text-base truncate">४. दन्त्य (दाँत)</span>
+            </div>
+
+            <div id="box-zone-oshth" data-zone="zone-oshth" class="organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 flex items-center gap-2 transition-all duration-200">
+              <span class="status-dot w-4 h-4 rounded-full bg-rose-600 flex-shrink-0 border border-white"></span>
+              <span class="font-extrabold text-sm md:text-base truncate">५. ओष्ठ्य (होंठ)</span>
+            </div>
+
+            <div id="box-zone-nasika" data-zone="zone-nasika" class="organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 flex items-center gap-2 transition-all duration-200">
+              <span class="status-dot w-4 h-4 rounded-full bg-cyan-600 flex-shrink-0 border border-white"></span>
+              <span class="font-extrabold text-sm md:text-base truncate">६. नासिक्य (नाक)</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Articulation Science & Sutra Explanatory Card -->
+      <div id="phoneticCard" class="bg-white rounded-2xl shadow-sm border-2 border-slate-200 p-4 transition-all">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500">उच्चारण विज्ञान एवं सूत्र</span>
+          <span id="activeSthanBadge" class="text-sm font-extrabold px-3 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-300">
+            स्थान: कण्ठ्य
+          </span>
+        </div>
+        
+        <div class="mt-3 space-y-2">
+          <div class="bg-indigo-50 p-3 rounded-xl border-2 border-indigo-200">
+            <div class="text-xs font-bold text-indigo-900">पाणिनीय व्याकरण सूत्र:</div>
+            <div id="sutraText" class="text-base md:text-lg font-black text-indigo-800 mt-0.5">अकुहविसर्जनीयानां कण्ठः</div>
+          </div>
+          <p id="sutraDesc" class="text-sm font-medium text-slate-700 leading-relaxed">
+            कंठ्य ध्वनियों का उच्चारण करते समय वायु सीधे गले (कण्ठ/स्वरयंत्र) और कोमल तालु के भाग से बिना किसी जिह्वा अवरोध के बाहर निकलती है।
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Letter Selection, Output Box & Full Alphabet Grid (7 cols) -->
+    <div class="lg:col-span-7 flex flex-col gap-4">
+
+      <!-- Featured Letter & Selection Display Box -->
+      <div class="bg-white rounded-2xl shadow-md border-2 border-slate-300 p-4">
+        
+        <!-- Top row: Active letter badge + InScript key + Audio button -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div class="flex items-center gap-4 w-full sm:w-auto">
+            <!-- Giant Letter Display Tile -->
+            <div id="featuredLetterTile" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-amber-400 text-slate-950 border-4 border-red-600 ring-4 ring-amber-200 flex items-center justify-center text-5xl sm:text-6xl font-black shadow-lg flex-shrink-0 transition-transform">
+              क
+            </div>
+            
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span id="featuredLetterName" class="text-xl sm:text-2xl font-black text-slate-900">वर्ण: 'क'</span>
+                <span id="letterCategoryTag" class="text-xs sm:text-sm font-extrabold px-3 py-0.5 bg-indigo-100 text-indigo-900 rounded-full border border-indigo-300">
+                  स्पर्श व्यंजन (क वर्ग)
+                </span>
+              </div>
+              <div class="text-sm text-slate-700 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                <span>उच्चारण स्थान: <strong id="letterPlaceText" class="text-red-700 font-black text-base underline">कण्ठ्य</strong></span>
+                <span>प्रयत्न: <span id="letterPrayatnaText" class="text-slate-900 font-bold">अल्पप्राण, अघोष</span></span>
+              </div>
+              <div class="text-xs sm:text-sm text-indigo-700 font-bold mt-1.5 flex items-center gap-1.5">
+                <span>इनस्क्रिप्ट कुंजी:</span>
+                <kbd id="letterInscriptKey" class="px-2.5 py-0.5 bg-yellow-300 border-2 border-slate-900 rounded-lg font-mono font-black text-slate-950 text-base shadow-sm">k</kbd>
+                <span class="text-slate-500 text-xs">(कीबोर्ड पर 'k' दबाएं)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pronounce Button -->
+          <button id="btnPronounceCurrent" class="w-full sm:w-auto px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-extrabold text-sm shadow-md border-2 border-emerald-800 flex items-center justify-center gap-2 transition flex-shrink-0">
+            <span class="text-xl">🔊</span>
+            <span>उच्चारण सुनें</span>
+          </button>
+        </div>
+
+        <!-- Selected Letters Output Box (चुने गए वर्णों का संचय बॉक्स) -->
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+            <label for="outputTextBox" class="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span>📝</span>
+              <span>चुने गए वर्ण (बड़ा डिस्प्ले बॉक्स):</span>
+            </label>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button id="btnSpeakAll" class="px-3 py-1 text-xs font-extrabold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300 transition">
+                ▶ सभी का उच्चारण
+              </button>
+              <button id="btnCopyText" class="px-3 py-1 text-xs font-extrabold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition">
+                📋 कॉपी
+              </button>
+              <button id="btnBackspace" class="px-3 py-1 text-xs font-extrabold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg border border-amber-300 transition">
+                ⌫ मिटाएं
+              </button>
+              <button id="btnClearText" class="px-3 py-1 text-xs font-extrabold text-rose-800 bg-rose-100 hover:bg-rose-200 rounded-lg border border-rose-300 transition">
+                🗑️ साफ़ करें
+              </button>
+            </div>
+          </div>
+          
+          <div class="relative">
+            <textarea id="outputTextBox" rows="2" class="w-full p-3 bg-yellow-50/70 border-2 border-slate-400 rounded-xl text-slate-950 text-xl md:text-2xl tracking-widest font-black focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none font-sans" placeholder="यहाँ वर्णों पर क्लिक करें या कीबोर्ड पर बटन दबाएं..." readonly></textarea>
+            <div id="copyToast" class="hidden absolute top-2 right-2 bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded shadow">कॉपी हुआ!</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Hindi Varnamala Interactive Keypad Card -->
+      <div class="bg-white rounded-2xl shadow-md border-2 border-slate-300 p-4 flex flex-col gap-4">
+        
+        <!-- Filter Tabs -->
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-200">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button class="filter-tab px-3 py-1.5 text-xs font-extrabold rounded-lg bg-indigo-600 text-white shadow-sm" data-filter="all">सभी वर्ण</button>
+            <button class="filter-tab px-3 py-1.5 text-xs font-extrabold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-filter="swar">स्वर (13)</button>
+            <button class="filter-tab px-3 py-1.5 text-xs font-extrabold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-filter="sparsh">स्पर्श व्यंजन (25)</button>
+            <button class="filter-tab px-3 py-1.5 text-xs font-extrabold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-filter="antashtha">अन्तःस्थ व ऊष्म</button>
+            <button class="filter-tab px-3 py-1.5 text-xs font-extrabold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" data-filter="sanyukt">संयुक्त व अन्य</button>
+          </div>
+          <span class="text-xs text-slate-600 font-bold">वर्ण चुनने पर पीले-लाल बॉक्स में हाईलाइट होगा</span>
+        </div>
+
+        <!-- Section 1: स्वर (Vowels) -->
+        <div id="sec-swar" class="varnamala-section">
+          <div class="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span>स्वर (Vowels)</span>
+            <span class="text-[11px] text-slate-500 font-semibold">कण्ठ्य, तालव्य, ओष्ठ्य, कण्ठतालव्य, कण्ठोष्ठ्य</span>
+          </div>
+          <div id="gridSwar" class="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-7 gap-2">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Section 2: स्पर्श व्यंजन (Consonants by Varga) -->
+        <div id="sec-sparsh" class="varnamala-section space-y-3">
+          <div class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+            <span>स्पर्श व्यंजन (5 वर्ग)</span>
+            <span class="text-[11px] text-slate-500 font-semibold">प्रत्येक वर्ग का अपना उच्चारण स्थान</span>
+          </div>
+
+          <!-- K Varga (Kanthya) -->
+          <div class="bg-purple-100/70 p-2.5 rounded-xl border-2 border-purple-300">
+            <div class="flex items-center justify-between text-xs sm:text-sm font-extrabold text-purple-950 mb-1.5">
+              <span>१. क वर्ग — कण्ठ्य (गला / Throat)</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-purple-700 text-white">क, ख, ग, घ, ङ</span>
+            </div>
+            <div id="gridKVarga" class="grid grid-cols-5 gap-2"></div>
+          </div>
+
+          <!-- Ch Varga (Talavya) -->
+          <div class="bg-sky-100/70 p-2.5 rounded-xl border-2 border-sky-300">
+            <div class="flex items-center justify-between text-xs sm:text-sm font-extrabold text-sky-950 mb-1.5">
+              <span>२. च वर्ग — तालव्य (तालु / Palate)</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-sky-700 text-white">च, छ, ज, झ, ञ</span>
+            </div>
+            <div id="gridChVarga" class="grid grid-cols-5 gap-2"></div>
+          </div>
+
+          <!-- T Varga (Murdhanya) -->
+          <div class="bg-emerald-100/70 p-2.5 rounded-xl border-2 border-emerald-300">
+            <div class="flex items-center justify-between text-xs sm:text-sm font-extrabold text-emerald-950 mb-1.5">
+              <span>३. ट वर्ग — मूर्धन्य (मूर्धा / Roof)</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-700 text-white">ट, ठ, ड, ढ, ण</span>
+            </div>
+            <div id="gridTVarga" class="grid grid-cols-5 gap-2"></div>
+          </div>
+
+          <!-- Ta Varga (Dantya) -->
+          <div class="bg-amber-100/70 p-2.5 rounded-xl border-2 border-amber-300">
+            <div class="flex items-center justify-between text-xs sm:text-sm font-extrabold text-amber-950 mb-1.5">
+              <span>४. त वर्ग — दन्त्य (दाँत / Teeth)</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-700 text-white">त, थ, द, ध, न</span>
+            </div>
+            <div id="gridTaVarga" class="grid grid-cols-5 gap-2"></div>
+          </div>
+
+          <!-- P Varga (Oshthya) -->
+          <div class="bg-rose-100/70 p-2.5 rounded-xl border-2 border-rose-300">
+            <div class="flex items-center justify-between text-xs sm:text-sm font-extrabold text-rose-950 mb-1.5">
+              <span>५. प वर्ग — ओष्ठ्य (होंठ / Lips)</span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-700 text-white">प, फ, ब, भ, म</span>
+            </div>
+            <div id="gridPVarga" class="grid grid-cols-5 gap-2"></div>
+          </div>
+        </div>
+
+        <!-- Section 3: अन्तःस्थ व ऊष्म व्यंजन -->
+        <div id="sec-antashtha" class="varnamala-section grid grid-cols-1 md:grid-cols-2 gap-3">
+          
+          <div class="bg-slate-100 p-2.5 rounded-xl border-2 border-slate-300">
+            <div class="text-xs font-extrabold text-slate-900 mb-1.5">अन्तःस्थ व्यंजन (Semivowels)</div>
+            <div id="gridAntashtha" class="grid grid-cols-4 gap-2"></div>
+          </div>
+
+          <div class="bg-slate-100 p-2.5 rounded-xl border-2 border-slate-300">
+            <div class="text-xs font-extrabold text-slate-900 mb-1.5">ऊष्म व्यंजन (Fricatives)</div>
+            <div id="gridUshma" class="grid grid-cols-4 gap-2"></div>
+          </div>
+
+        </div>
+
+        <!-- Section 4: संयुक्त एवं अतिरिक्त व्यंजन -->
+        <div id="sec-sanyukt" class="varnamala-section">
+          <div class="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">संयुक्त व उत्क्षिप्त वर्ण</div>
+          <div id="gridSanyukt" class="grid grid-cols-3 sm:grid-cols-6 gap-2"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- InScript Layout Cheatsheet Modal -->
+  <div id="inscriptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-5 shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>⌨️</span>
+            <span>देवनागरी इनस्क्रिप्ट (InScript) कीबोर्ड लेआउट संदर्भ</span>
+          </h3>
+          <p class="text-xs text-slate-500">मानक भारतीय भाषा इनस्क्रिप्ट लेआउट (QWERTY कुंजियों से संबंधित)</p>
+        </div>
+        <button id="btnCloseInscriptGuide" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm">
+          ✕
+        </button>
+      </div>
+
+      <div class="py-4 space-y-3">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          इस सॉफ्टवेयर में आप सामान्य QWERTY कीबोर्ड पर टाइप कर सकते हैं। सिस्टम आपके इनपुट को इनस्क्रिप्ट मानक के अनुसार संबंधित वर्ण में बदलता है, उच्चारण सुनाता है तथा वाग्यंत्र पर उसका स्थान दिखाता है:
+        </p>
+
+        <!-- InScript Keyboard Table -->
+        <div class="border border-slate-200 rounded-xl overflow-hidden text-xs">
+          <table class="w-full border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-2 text-left">पंक्ति (Row)</th>
+                <th class="p-2 text-left">सामान्य कुंजी (Normal)</th>
+                <th class="p-2 text-left">Shift के साथ (Shifted)</th>
+                <th class="p-2 text-left">मुख्य उच्चारण स्थान</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tr>
+                <td class="p-2 font-medium">Home Row (मध्य)</td>
+                <td class="p-2 font-mono">k (क), l (त), h (प), ; (च), ' (ट), d (्)</td>
+                <td class="p-2 font-mono">K (ख), L (थ), H (फ), : (छ), " (ठ), D (अ)</td>
+                <td class="p-2">कण्ठ्य, दन्त्य, ओष्ठ्य, तालव्य, मूर्धन्य</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">Top Row (ऊपरी)</td>
+                <td class="p-2 font-mono">u (ह), i (ग), o (द), p (ज), y (ब), [ (ड)</td>
+                <td class="p-2 font-mono">U (ङ), I (घ), O (ध), P (झ), Y (भ), { (ढ)</td>
+                <td class="p-2">कण्ठ्य, तालव्य, मूर्धन्य, दन्त्य, ओष्ठ्य</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">Bottom Row (निचली)</td>
+                <td class="p-2 font-mono">c (म), v (न), b (व), n (ल), m (स), / (य)</td>
+                <td class="p-2 font-mono">C (ण), M (श), &lt; (ष), X (ँ), x (ं)</td>
+                <td class="p-2">नासिक्य, दन्त्य, तालव्य, मूर्धन्य</td>
+              </tr>
+              <tr>
+                <td class="p-2 font-medium">स्वर पंक्तियाँ</td>
+                <td class="p-2 font-mono">e (ा), r (ी), t (ू), g (ु), s (े), a (ो)</td>
+                <td class="p-2 font-mono">E (आ), R (ई), T (ऊ), G (उ), S (ऐ), A (ओ), + (ऋ)</td>
+                <td class="p-2">कण्ठ्य, तालव्य, ओष्ठ्य, कण्ठतालव्य आदि</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs text-amber-900">
+          <strong>विशेष नोट:</strong> यदि आपके कंप्यूटर/फ़ोन में पहले से ही देवनागरी इनपुट सक्षम है, तो आप सीधे हिंदी में भी टाइप कर सकते हैं। टूल दोनों प्रकार के इनपुट को तुरंत पहचानता है।
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button id="btnModalCloseSecondary" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold">
+          समझ गया / बंद करें
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+      <div>
+        <span>हिंदी व्याकरण एवं उच्चारण स्थान शिक्षा यंत्र</span> • 
+        <span>संस्कृत पाणिनीय शिक्षा पर आधारित स्वरयंत्र विश्लेषण</span>
+      </div>
+      <div class="text-slate-500">
+        HTML5 Web Speech API + SVG High-Contrast Classroom Display + InScript Engine
+      </div>
+    </div>
+  </footer>
+
+  <!-- Main JavaScript Logic -->
+  <script>
+    // --- 1. DATA DEFINITIONS FOR HINDI VARNAMALA & ARTICULATION ---
+    const VARNAMALA_DATA = [
+      // स्वर (Vowels)
+      { char: 'अ', type: 'swar', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'D', prayatna: 'ह्रस्व, विवृत', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'कण्ठ्य स्वर - वायु बिना रुकावट कण्ठ (गले) से निकलती है।' },
+      { char: 'आ', type: 'swar', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'E', prayatna: 'दीर्घ, विवृत', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'कण्ठ्य स्वर - कण्ठ का विवृत विस्तार।' },
+      { char: 'इ', type: 'swar', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: 'F', prayatna: 'ह्रस्व, संवृत', sutra: 'इचुयशानां तालु', desc: 'तालव्य स्वर - जिह्वा का मध्य भाग तालु के निकट उठता है।' },
+      { char: 'ई', type: 'swar', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: 'R', prayatna: 'दीर्घ, संवृत', sutra: 'इचुयशानां तालु', desc: 'तालव्य स्वर - तालु के साथ जिह्वा का दीर्घ संसर्ग।' },
+      { char: 'उ', type: 'swar', place: 'ओष्ठ्य (होंठ)', organs: ['zone-oshth'], inscript: 'G', prayatna: 'ह्रस्व, संवृत-गोलाकार', sutra: 'उपूपध्मानीयानाम् ओष्ठौ', desc: 'ओष्ठ्य स्वर - दोनों होंठ गोल (वृत्ताकार) होकर वायु को निकालते हैं।' },
+      { char: 'ऊ', type: 'swar', place: 'ओष्ठ्य (होंठ)', organs: ['zone-oshth'], inscript: 'T', prayatna: 'दीर्घ, संवृत-गोलाकार', sutra: 'उपूपध्मानीयानाम् ओष्ठौ', desc: 'ओष्ठ्य स्वर - दोनों होंठों का पूर्ण वर्तुल संकोच।' },
+      { char: 'ऋ', type: 'swar', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '+', prayatna: 'ह्रस्व, मूर्धन्य', sutra: 'ऋटुरषाणां मूर्धा', desc: 'मूर्धन्य स्वर - जिह्वा की नोक मूर्धा (मसूड़े के ऊपर छत) को स्पर्श करती है।' },
+      { char: 'ए', type: 'swar', place: 'कण्ठतालव्य (गला + तालु)', organs: ['zone-kanth', 'zone-talu'], inscript: 'S', prayatna: 'संयुक्त, संवृत', sutra: 'एदैतोः कण्ठतालु', desc: 'कण्ठ-तालव्य संयुक्त स्वर - कण्ठ और तालु दोनों के परस्पर सहयोग से उच्चरित होता है।' },
+      { char: 'ऐ', type: 'swar', place: 'कण्ठतालव्य (गला + तालु)', organs: ['zone-kanth', 'zone-talu'], inscript: 'W', prayatna: 'संयुक्त, विवृत', sutra: 'एदैतोः कण्ठतालु', desc: 'कण्ठ-तालव्य संयुक्त स्वर - कण्ठ तथा तालु का संयुक्त विस्तार।' },
+      { char: 'ओ', type: 'swar', place: 'कण्ठोष्ठ्य (गला + होंठ)', organs: ['zone-kanth', 'zone-oshth'], inscript: 'A', prayatna: 'संयुक्त, गोलाकार', sutra: 'ओदौतोः कण्ठोष्ठम्', desc: 'कण्ठ-ओष्ठ्य स्वर - कण्ठ से ध्वनि तथा होंठ गोल होकर उच्चरित होते हैं।' },
+      { char: 'औ', type: 'swar', place: 'कण्ठोष्ठ्य (गला + होंठ)', organs: ['zone-kanth', 'zone-oshth'], inscript: 'Q', prayatna: 'संयुक्त, विवृत-गोलाकार', sutra: 'ओदौतोः कण्ठोष्ठम्', desc: 'कण्ठ-ओष्ठ्य स्वर - कण्ठ और वर्तुल ओष्ठ का संयुक्त नाद।' },
+      { char: 'अं', type: 'swar', place: 'नासिक्य (नाक)', organs: ['zone-nasika'], inscript: 'x', prayatna: 'अनुस्वार, नासिक्य', sutra: 'नासिकानुस्वारस्य', desc: 'अनुस्वार - वायु पूर्णतः नासिका (नाक) के छिद्रों से बाहर निकलती है।' },
+      { char: 'अः', type: 'swar', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: '_', prayatna: 'विसर्ग, अघोष', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'विसर्ग - कण्ठ से निकलने वाली हकार जैसी हल्की निःश्वास ध्वनि।' },
+
+      // क वर्ग (कण्ठ्य)
+      { char: 'क', type: 'sparsh', varga: 'क वर्ग', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'k', prayatna: 'अल्पप्राण, अघोष', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'कण्ठ्य स्पर्श वर्ण - जिह्वा का पश्च भाग कोमल तालु व कण्ठ को स्पर्श करता है।' },
+      { char: 'ख', type: 'sparsh', varga: 'क वर्ग', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'K', prayatna: 'महाप्राण, अघोष', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'कण्ठ्य स्पर्श वर्ण - कण्ठ से अधिक प्राणवायु के साथ निःसृत होता है।' },
+      { char: 'ग', type: 'sparsh', varga: 'क वर्ग', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'i', prayatna: 'अल्पप्राण, घोष', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'कण्ठ्य स्पर्श वर्ण - स्वरतंत्री में कम्पन (घोष) के साथ कण्ठ से उच्चरित।' },
+      { char: 'घ', type: 'sparsh', varga: 'क वर्ग', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'I', prayatna: 'महाप्राण, घोष', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'कण्ठ्य स्पर्श वर्ण - स्वरतंत्री में कम्पन तथा प्रचुर प्राणवायु का योग।' },
+      { char: 'ङ', type: 'sparsh', varga: 'क वर्ग', place: 'कण्ठ-नासिक्य (गला + नाक)', organs: ['zone-kanth', 'zone-nasika'], inscript: 'U', prayatna: 'अल्पप्राण, घोष, नासिक्य', sutra: 'ञमङणननानां नासिका च', desc: 'कण्ठ्य एवं नासिक्य - कण्ठ के संसर्ग के साथ वायु नाक से भी निकलती है।' },
+
+      // च वर्ग (तालव्य)
+      { char: 'च', type: 'sparsh', varga: 'च वर्ग', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: ';', prayatna: 'अल्पप्राण, अघोष', sutra: 'इचुयशानां तालु', desc: 'तालव्य स्पर्श वर्ण - जिह्वा का अग्र-मध्य भाग कठोर तालु को स्पर्श करता है।' },
+      { char: 'छ', type: 'sparsh', varga: 'च वर्ग', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: ':', prayatna: 'महाप्राण, अघोष', sutra: 'इचुयशानां तालु', desc: 'तालव्य स्पर्श वर्ण - तालु स्पर्श के साथ तीव्र वायु निःसरण।' },
+      { char: 'ज', type: 'sparsh', varga: 'च वर्ग', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: 'p', prayatna: 'अल्पप्राण, घोष', sutra: 'इचुयशानां तालु', desc: 'तालव्य स्पर्श वर्ण - तालु स्पर्श व स्वरतंत्री में नाद।' },
+      { char: 'झ', type: 'sparsh', varga: 'च वर्ग', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: 'P', prayatna: 'महाप्राण, घोष', sutra: 'इचुयशानां तालु', desc: 'तालव्य स्पर्श वर्ण - तालु पर घोषयुक्त महाप्राण निष्पत्ति।' },
+      { char: 'ञ', type: 'sparsh', varga: 'च वर्ग', place: 'तालु-नासिक्य (तालु + नाक)', organs: ['zone-talu', 'zone-nasika'], inscript: '}', prayatna: 'अल्पप्राण, घोष, नासिक्य', sutra: 'ञमङणननानां नासिका च', desc: 'तालव्य एवं नासिक्य - तालु स्पर्श के साथ वायु नासिका से निर्गत होती है।' },
+
+      // ट वर्ग (मूर्धन्य)
+      { char: 'ट', type: 'sparsh', varga: 'ट वर्ग', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: "'", prayatna: 'अल्पप्राण, अघोष', sutra: 'ऋटुरषाणां मूर्धा', desc: 'मूर्धन्य वर्ण - जिह्वा की नोक उलटकर मूर्धा (तालु के कठोर शिखर) को झटके से छूती है।' },
+      { char: 'ठ', type: 'sparsh', varga: 'ट वर्ग', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '"', prayatna: 'महाप्राण, अघोष', sutra: 'ऋटुरषाणां मूर्धा', desc: 'मूर्धन्य वर्ण - मूर्धा स्पर्श के साथ अधिक श्वासवायु।' },
+      { char: 'ड', type: 'sparsh', varga: 'ट वर्ग', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '[', prayatna: 'अल्पप्राण, घोष', sutra: 'ऋटुरषाणां मूर्धा', desc: 'मूर्धन्य वर्ण - घोष ध्वनि के साथ मूर्धा का स्पर्श।' },
+      { char: 'ढ', type: 'sparsh', varga: 'ट वर्ग', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '{', prayatna: 'महाप्राण, घोष', sutra: 'ऋटुरषाणां मूर्धा', desc: 'मूर्धन्य वर्ण - घोष एवं महाप्राण के साथ मूर्धा स्पर्श।' },
+      { char: 'ण', type: 'sparsh', varga: 'ट वर्ग', place: 'मूर्धा-नासिक्य (मूर्धा + नाक)', organs: ['zone-murdha', 'zone-nasika'], inscript: 'C', prayatna: 'अल्पप्राण, घोष, नासिक्य', sutra: 'ञमङणननानां नासिका च', desc: 'मूर्धन्य एवं नासिक्य - जिह्वा मूर्धा पर और वायु नासिका से।' },
+
+      // त वर्ग (दन्त्य)
+      { char: 'त', type: 'sparsh', varga: 'त वर्ग', place: 'दन्त्य (दाँत)', organs: ['zone-dant'], inscript: 'l', prayatna: 'अल्पप्राण, अघोष', sutra: 'ऌतुलसानां दन्ताः', desc: 'दन्त्य वर्ण - जिह्वा की नोक ऊपरी दांतों की पिछली सतह को छूती है।' },
+      { char: 'थ', type: 'sparsh', varga: 'त वर्ग', place: 'दन्त्य (दाँत)', organs: ['zone-dant'], inscript: 'L', prayatna: 'महाप्राण, अघोष', sutra: 'ऌतुलसानां दन्ताः', desc: 'दन्त्य वर्ण - दांतों के स्पर्श के साथ वायु का तीव्र प्रवाह।' },
+      { char: 'द', type: 'sparsh', varga: 'त वर्ग', place: 'दन्त्य (दाँत)', organs: ['zone-dant'], inscript: 'o', prayatna: 'अल्पप्राण, घोष', sutra: 'ऌतुलसानां दन्ताः', desc: 'दन्त्य वर्ण - घोष नाद के साथ दन्त स्पर्श।' },
+      { char: 'ध', type: 'sparsh', varga: 'त वर्ग', place: 'दन्त्य (दाँत)', organs: ['zone-dant'], inscript: 'O', prayatna: 'महाप्राण, घोष', sutra: 'ऌतुलसानां दन्ताः', desc: 'दन्त्य वर्ण - दन्त स्पर्श, घोष तथा महाप्राण।' },
+      { char: 'न', type: 'sparsh', varga: 'त वर्ग', place: 'दन्त-नासिक्य (दाँत + नाक)', organs: ['zone-dant', 'zone-nasika'], inscript: 'v', prayatna: 'अल्पप्राण, घोष, नासिक्य', sutra: 'ञमङणननानां नासिका च', desc: 'दन्त्य एवं नासिक्य - जिह्वा दांतों पर और वायु नासिका से।' },
+
+      // प वर्ग (ओष्ठ्य)
+      { char: 'प', type: 'sparsh', varga: 'प वर्ग', place: 'ओष्ठ्य (होंठ)', organs: ['zone-oshth'], inscript: 'h', prayatna: 'अल्पप्राण, अघोष', sutra: 'उपूपध्मानीयानाम् ओष्ठौ', desc: 'ओष्ठ्य वर्ण - दोनों होंठ परस्पर मिलकर वायु रोकते हैं और फिर खुलते हैं।' },
+      { char: 'फ', type: 'sparsh', varga: 'प वर्ग', place: 'ओष्ठ्य (होंठ)', organs: ['zone-oshth'], inscript: 'H', prayatna: 'महाप्राण, अघोष', sutra: 'उपूपध्मानीयानाम् ओष्ठौ', desc: 'ओष्ठ्य वर्ण - होंठों के मिलने के बाद अधिक वायु विस्फोट।' },
+      { char: 'ब', type: 'sparsh', varga: 'प वर्ग', place: 'ओष्ठ्य (होंठ)', organs: ['zone-oshth'], inscript: 'y', prayatna: 'अल्पप्राण, घोष', sutra: 'उपूपध्मानीयानाम् ओष्ठौ', desc: 'ओष्ठ्य वर्ण - स्वरतंत्री कम्पन (घोष) के साथ दोनों होंठों का मिलन।' },
+      { char: 'भ', type: 'sparsh', varga: 'प वर्ग', place: 'ओष्ठ्य (होंठ)', organs: ['zone-oshth'], inscript: 'Y', prayatna: 'महाप्राण, घोष', sutra: 'उपूपध्मानीयानाम् ओष्ठौ', desc: 'ओष्ठ्य वर्ण - घोष एवं महाप्राण के साथ होंठों का सम्पुट।' },
+      { char: 'म', type: 'sparsh', varga: 'प वर्ग', place: 'ओष्ठ-नासिक्य (होंठ + नाक)', organs: ['zone-oshth', 'zone-nasika'], inscript: 'c', prayatna: 'अल्पप्राण, घोष, नासिक्य', sutra: 'ञमङणननानां नासिका च', desc: 'ओष्ठ्य एवं नासिक्य - दोनों होंठ बंद होते हैं और वायु नाक से निकलती है।' },
+
+      // अन्तःस्थ (Semivowels)
+      { char: 'य', type: 'antashtha', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: '/', prayatna: 'अल्पप्राण, घोष, ईषत्स्पृष्ट', sutra: 'इचुयशानां तालु', desc: 'अन्तःस्थ तालव्य - जिह्वा तालु के समीप जाती है किन्तु पूर्ण स्पर्श नहीं करती।' },
+      { char: 'र', type: 'antashtha', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: 'j', prayatna: 'अल्पप्राण, घोष, लुण्ठित', sutra: 'ऋटुरषाणां मूर्धा', desc: 'अन्तःस्थ मूर्धन्य (लुण्ठित) - जिह्वा की नोक मूर्धा पर कांपती (कंपन्न) है।' },
+      { char: 'ल', type: 'antashtha', place: 'दन्त्य (दाँत)', organs: ['zone-dant'], inscript: 'n', prayatna: 'अल्पप्राण, घोष, पार्श्विक', sutra: 'ऌतुलसानां दन्ताः', desc: 'अन्तःस्थ दन्त्य (पार्श्विक) - जिह्वा दांतों पर और वायु दोनों बगलों (पार्श्व) से निकलती है।' },
+      { char: 'व', type: 'antashtha', place: 'दन्तोष्ठ्य (दाँत + होंठ)', organs: ['zone-dant', 'zone-oshth'], inscript: 'b', prayatna: 'अल्पप्राण, घोष, ईषत्स्पृष्ट', sutra: 'वकारस्य दन्तोष्ठम्', desc: 'दन्तोष्ठ्य - ऊपर के दांत और नीचे का होंठ परस्पर संसर्ग करते हैं।' },
+
+      // ऊष्म (Fricatives)
+      { char: 'श', type: 'ushma', place: 'तालव्य (तालु)', organs: ['zone-talu'], inscript: 'M', prayatna: 'महाप्राण, अघोष, ईषद्विवृत', sutra: 'इचुयशानां तालु', desc: 'ऊष्म तालव्य - जिह्वा और तालु के बीच घर्षण से सीटी जैसी ऊष्म वायु निकलती है।' },
+      { char: 'ष', type: 'ushma', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '<', prayatna: 'महाप्राण, अघोष, ईषद्विवृत', sutra: 'ऋटुरषाणां मूर्धा', desc: 'ऊष्म मूर्धन्य - जिह्वा मूर्धा की ओर मुड़कर ऊष्म घर्षण उत्पन्न करती है।' },
+      { char: 'स', type: 'ushma', place: 'दन्त्य (दाँत)', organs: ['zone-dant'], inscript: 'm', prayatna: 'महाप्राण, अघोष, ईषद्विवृत', sutra: 'ऌतुलसानां दन्ताः', desc: 'ऊष्म दन्त्य - दांतों और जिह्वाग्र के बीच तीक्ष्ण घर्षण।' },
+      { char: 'ह', type: 'ushma', place: 'कण्ठ्य (गला)', organs: ['zone-kanth'], inscript: 'u', prayatna: 'महाप्राण, घोष, ईषद्विवृत', sutra: 'अकुहविसर्जनीयानां कण्ठः', desc: 'ऊष्म कण्ठ्य - स्वरयंत्र के खुले रहने पर कण्ठ से ऊष्म श्वास ध्वनि।' },
+
+      // संयुक्त व अन्य वर्ण
+      { char: 'क्ष', type: 'sanyukt', place: 'कण्ठ-मूर्धन्य (गला + मूर्धा)', organs: ['zone-kanth', 'zone-murdha'], inscript: '&', prayatna: 'संयुक्त (क् + ष्)', sutra: 'क् + ष् = क्ष', desc: 'संयुक्त वर्ण - क (कण्ठ्य) और ष (मूर्धन्य) का संयुक्त उच्चारण।' },
+      { char: 'त्र', type: 'sanyukt', place: 'दन्त-मूर्धन्य (दाँत + मूर्धा)', organs: ['zone-dant', 'zone-murdha'], inscript: '^', prayatna: 'संयुक्त (त् + र्)', sutra: 'त् + र् = त्र', desc: 'संयुक्त वर्ण - त (दन्त्य) और र (मूर्धन्य) का संयुक्त नाद।' },
+      { char: 'ज्ञ', type: 'sanyukt', place: 'तालु-नासिक्य (तालु + नाक)', organs: ['zone-talu', 'zone-nasika'], inscript: '%', prayatna: 'संयुक्त (ज् + ञ्)', sutra: 'ज् + ञ् = ज्ञ', desc: 'संयुक्त वर्ण - ज (तालव्य) और ञ (तालव्य-नासिक्य) का संयोग।' },
+      { char: 'श्र', type: 'sanyukt', place: 'तालु-मूर्धन्य (तालु + मूर्धा)', organs: ['zone-talu', 'zone-murdha'], inscript: '*', prayatna: 'संयुक्त (श् + र्)', sutra: 'श् + र् = श्र', desc: 'संयुक्त वर्ण - श (तालव्य) और र (मूर्धन्य) का संयुक्त रूप।' },
+      { char: 'ड़', type: 'sanyukt', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '[ + .', prayatna: 'उत्क्षिप्त, मूर्धन्य', sutra: 'मूर्धन्य उत्क्षिप्त', desc: 'उत्क्षिप्त ध्वनि - जिह्वा की नोक मूर्धा को झटके से मारकर नीचे गिरती है।' },
+      { char: 'ढ़', type: 'sanyukt', place: 'मूर्धन्य (मूर्धा)', organs: ['zone-murdha'], inscript: '{ + .', prayatna: 'उत्क्षिप्त, महाप्राण', sutra: 'मूर्धन्य उत्क्षिप्त महाप्राण', desc: 'उत्क्षिप्त महाप्राण - झटके के साथ मूर्धा से अधिक श्वास निष्कासन।' }
+    ];
+
+    // High-contrast themes per organ for classroom distance visibility
+    const ORGAN_THEMES = {
+      'zone-kanth':  { bg: '#7e22ce', boxClasses: 'bg-purple-700 text-white border-yellow-300 ring-4 ring-yellow-400 shadow-xl scale-105' },
+      'zone-talu':   { bg: '#0369a1', boxClasses: 'bg-sky-700 text-white border-yellow-300 ring-4 ring-yellow-400 shadow-xl scale-105' },
+      'zone-murdha': { bg: '#15803d', boxClasses: 'bg-emerald-700 text-white border-yellow-300 ring-4 ring-yellow-400 shadow-xl scale-105' },
+      'zone-dant':   { bg: '#d97706', boxClasses: 'bg-amber-600 text-white border-yellow-300 ring-4 ring-yellow-400 shadow-xl scale-105' },
+      'zone-oshth':  { bg: '#be123c', boxClasses: 'bg-rose-700 text-white border-yellow-300 ring-4 ring-yellow-400 shadow-xl scale-105' },
+      'zone-nasika': { bg: '#0891b2', boxClasses: 'bg-cyan-700 text-white border-yellow-300 ring-4 ring-yellow-400 shadow-xl scale-105' }
+    };
+
+    // Quick lookup maps
+    const CHAR_MAP = {};
+    const INSCRIPT_KEY_MAP = {};
+
+    VARNAMALA_DATA.forEach(item => {
+      CHAR_MAP[item.char] = item;
+      if (item.inscript && item.inscript.length === 1) {
+        INSCRIPT_KEY_MAP[item.inscript] = item.char;
+      }
+    });
+
+    // Additional direct Devanagari inscript mappings
+    const EXTENDED_INSCRIPT_KEYS = {
+      'd': '्', 'D': 'अ',
+      'e': 'ा', 'E': 'आ',
+      'f': 'ि', 'F': 'इ',
+      'r': 'ी', 'R': 'ई',
+      'g': 'ु', 'G': 'उ',
+      't': 'ू', 'T': 'ऊ',
+      '=': 'ृ', '+': 'ऋ',
+      's': 'े', 'S': 'ऐ',
+      'a': 'ो', 'A': 'ओ',
+      'q': 'ौ', 'Q': 'औ',
+      'x': 'अं', 'X': 'ँ',
+      '_': 'अः',
+      'k': 'क', 'K': 'ख',
+      'i': 'ग', 'I': 'घ',
+      'U': 'ङ',
+      ';': 'च', ':': 'छ',
+      'p': 'ज', 'P': 'झ',
+      '}': 'ञ',
+      "'": 'ट', '"': 'ठ',
+      '[': 'ड', '{': 'ढ',
+      'C': 'ण',
+      'l': 'त', 'L': 'थ',
+      'o': 'द', 'O': 'ध',
+      'v': 'न',
+      'h': 'प', 'H': 'फ',
+      'y': 'ब', 'Y': 'भ',
+      'c': 'म',
+      '/': 'य',
+      'j': 'र',
+      'n': 'ल',
+      'b': 'व',
+      'M': 'श',
+      '<': 'ष',
+      'm': 'स',
+      'u': 'ह',
+      '&': 'क्ष',
+      '^': 'त्र',
+      '%': 'ज्ञ',
+      '*': 'श्र'
+    };
+
+    // State Variables
+    let currentActiveChar = 'क';
+    let voiceEnabled = true;
+    let showKeyHints = true;
+    let hindiVoice = null;
+
+    // DOM Elements
+    const outputTextBox = document.getElementById('outputTextBox');
+    const featuredLetterTile = document.getElementById('featuredLetterTile');
+    const featuredLetterName = document.getElementById('featuredLetterName');
+    const letterCategoryTag = document.getElementById('letterCategoryTag');
+    const letterPlaceText = document.getElementById('letterPlaceText');
+    const letterPrayatnaText = document.getElementById('letterPrayatnaText');
+    const letterInscriptKey = document.getElementById('letterInscriptKey');
+    const sutraText = document.getElementById('sutraText');
+    const sutraDesc = document.getElementById('sutraDesc');
+    const activeSthanBadge = document.getElementById('activeSthanBadge');
+    const activeOrgansCount = document.getElementById('activeOrgansCount');
+    const classroomHighlightBanner = document.getElementById('classroomHighlightBanner');
+    const bannerCharBox = document.getElementById('bannerCharBox');
+    const bannerPlaceTitle = document.getElementById('bannerPlaceTitle');
+    const btnVoiceToggle = document.getElementById('btnVoiceToggle');
+    const voiceStatusText = document.getElementById('voiceStatusText');
+    const voiceIcon = document.getElementById('voiceIcon');
+    const btnToggleKeyHints = document.getElementById('btnToggleKeyHints');
+    const keyHintStatusText = document.getElementById('keyHintStatusText');
+    const btnPronounceCurrent = document.getElementById('btnPronounceCurrent');
+    const btnSpeakAll = document.getElementById('btnSpeakAll');
+    const btnCopyText = document.getElementById('btnCopyText');
+    const btnBackspace = document.getElementById('btnBackspace');
+    const btnClearText = document.getElementById('btnClearText');
+    const copyToast = document.getElementById('copyToast');
+    const inscriptModal = document.getElementById('inscriptModal');
+    const btnOpenInscriptGuide = document.getElementById('btnOpenInscriptGuide');
+    const btnCloseInscriptGuide = document.getElementById('btnCloseInscriptGuide');
+    const btnModalCloseSecondary = document.getElementById('btnModalCloseSecondary');
+
+    // --- 2. SPEECH SYNTHESIS ENGINE (वाक् संश्लेषण) ---
+    function initSpeech() {
+      if (!('speechSynthesis' in window)) {
+        voiceEnabled = false;
+        voiceStatusText.textContent = 'उच्चारण: असमर्थ';
+        btnVoiceToggle.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      function loadVoices() {
+        const voices = window.speechSynthesis.getVoices();
+        hindiVoice = voices.find(v => v.lang === 'hi-IN' || v.lang.startsWith('hi')) ||
+                     voices.find(v => v.name.toLowerCase().includes('hindi')) ||
+                     null;
+      }
+
+      loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+    }
+
+    function speakText(text) {
+      if (!voiceEnabled || !('speechSynthesis' in window)) return;
+      
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN';
+      utterance.rate = 0.85;
+      utterance.pitch = 1.0;
+      
+      if (hindiVoice) {
+        utterance.voice = hindiVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // --- 3. VOCAL TRACT ANATOMY HIGHLIGHTING (शारीरिक आरेख प्रदीप्ति - हाई कंट्रास्ट) ---
+    function clearAnatomyHighlights() {
+      const allZones = document.querySelectorAll('.organ-zone');
+      allZones.forEach(zone => {
+        zone.classList.remove('active-zone');
+        const highlightPaths = zone.querySelectorAll('.zone-highlight');
+        highlightPaths.forEach(p => p.classList.add('hidden'));
+      });
+
+      // Reset all 6 indicator boxes
+      document.querySelectorAll('.organ-status-box').forEach(box => {
+        box.className = 'organ-status-box cursor-pointer p-2.5 rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-400 flex items-center gap-2 transition-all duration-200 opacity-60';
+      });
+    }
+
+    function highlightAnatomy(organIds, placeName, char) {
+      clearAnatomyHighlights();
+      
+      if (!organIds || organIds.length === 0) {
+        activeOrgansCount.textContent = 'निष्क्रिय';
+        return;
+      }
+
+      organIds.forEach(id => {
+        const group = document.getElementById(id);
+        if (group) {
+          group.classList.add('active-zone');
+          const color = group.getAttribute('data-color') || '#ef4444';
+          group.style.setProperty('--glow-color', color);
+          
+          const highlightPaths = group.querySelectorAll('.zone-highlight');
+          highlightPaths.forEach(p => p.classList.remove('hidden'));
+        }
+
+        // Highlight the corresponding big status box below SVG
+        const statusBox = document.getElementById('box-' + id);
+        if (statusBox && ORGAN_THEMES[id]) {
+          statusBox.className = `organ-status-box cursor-pointer p-2.5 rounded-xl border-4 flex items-center gap-2 transition-all duration-200 font-black ${ORGAN_THEMES[id].boxClasses}`;
+        }
+      });
+
+      // Update Big Classroom Banner Color & Text
+      const primaryOrgan = organIds[0];
+      if (ORGAN_THEMES[primaryOrgan]) {
+        classroomHighlightBanner.style.backgroundColor = ORGAN_THEMES[primaryOrgan].bg;
+      }
+      bannerCharBox.textContent = char || currentActiveChar;
+      bannerPlaceTitle.textContent = placeName;
+      activeOrgansCount.textContent = placeName;
+    }
+
+    // --- 4. RENDER KEYPAD BUTTONS ---
+    function createLetterButton(item) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.char = item.char;
+      btn.className = `letter-btn key-cap relative flex flex-col items-center justify-center p-2 rounded-xl bg-white border-2 border-slate-200 text-slate-800 font-bold transition select-none hover:border-indigo-500 group`;
+
+      btn.innerHTML = `
+        <span class="text-xl sm:text-2xl font-extrabold leading-tight group-hover:scale-110 transition-transform">${item.char}</span>
+        <span class="key-hint text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 mt-1 border border-slate-300 ${showKeyHints ? '' : 'hidden'}">${item.inscript}</span>
+      `;
+
+      btn.addEventListener('click', () => {
+        selectCharacter(item.char, true);
+      });
+
+      return btn;
+    }
+
+    function populateGrids() {
+      // Swar
+      const gridSwar = document.getElementById('gridSwar');
+      VARNAMALA_DATA.filter(d => d.type === 'swar').forEach(d => gridSwar.appendChild(createLetterButton(d)));
+
+      // Varga
+      const gridKVarga = document.getElementById('gridKVarga');
+      VARNAMALA_DATA.filter(d => d.varga === 'क वर्ग').forEach(d => gridKVarga.appendChild(createLetterButton(d)));
+
+      const gridChVarga = document.getElementById('gridChVarga');
+      VARNAMALA_DATA.filter(d => d.varga === 'च वर्ग').forEach(d => gridChVarga.appendChild(createLetterButton(d)));
+
+      const gridTVarga = document.getElementById('gridTVarga');
+      VARNAMALA_DATA.filter(d => d.varga === 'ट वर्ग').forEach(d => gridTVarga.appendChild(createLetterButton(d)));
+
+      const gridTaVarga = document.getElementById('gridTaVarga');
+      VARNAMALA_DATA.filter(d => d.varga === 'त वर्ग').forEach(d => gridTaVarga.appendChild(createLetterButton(d)));
+
+      const gridPVarga = document.getElementById('gridPVarga');
+      VARNAMALA_DATA.filter(d => d.varga === 'प वर्ग').forEach(d => gridPVarga.appendChild(createLetterButton(d)));
+
+      // Antashtha & Ushma
+      const gridAntashtha = document.getElementById('gridAntashtha');
+      VARNAMALA_DATA.filter(d => d.type === 'antashtha').forEach(d => gridAntashtha.appendChild(createLetterButton(d)));
+
+      const gridUshma = document.getElementById('gridUshma');
+      VARNAMALA_DATA.filter(d => d.type === 'ushma').forEach(d => gridUshma.appendChild(createLetterButton(d)));
+
+      // Sanyukt
+      const gridSanyukt = document.getElementById('gridSanyukt');
+      VARNAMALA_DATA.filter(d => d.type === 'sanyukt').forEach(d => gridSanyukt.appendChild(createLetterButton(d)));
+    }
+
+    // --- 5. CHARACTER SELECTION & DISPATCH ---
+    function selectCharacter(char, appendToText = true) {
+      const data = CHAR_MAP[char];
+      if (!data) return;
+
+      currentActiveChar = char;
+
+      // 1. Update Featured Tile
+      featuredLetterTile.textContent = data.char;
+      featuredLetterName.textContent = `वर्ण: '${data.char}'`;
+      letterCategoryTag.textContent = data.varga ? `स्पर्श व्यंजन (${data.varga})` : (data.type === 'swar' ? 'स्वर' : 'व्यंजन');
+      letterPlaceText.textContent = data.place;
+      letterPrayatnaText.textContent = data.prayatna;
+      letterInscriptKey.textContent = data.inscript;
+
+      // 2. Update Phonetics & Sutra Card
+      activeSthanBadge.textContent = `स्थान: ${data.place}`;
+      sutraText.textContent = data.sutra || 'पाणिनीय सूत्र';
+      sutraDesc.textContent = data.desc || '';
+
+      // 3. Highlight Vocal Tract SVG & Big Boxes
+      highlightAnatomy(data.organs, data.place, data.char);
+
+      // 4. Update Button Active States in Grid (Super bright Yellow + Red Border for back-row visibility)
+      document.querySelectorAll('.letter-btn').forEach(btn => {
+        if (btn.dataset.char === char) {
+          btn.classList.add('bg-amber-400', 'text-slate-950', 'border-red-600', 'ring-4', 'ring-amber-300', 'scale-110', 'z-10', 'shadow-xl');
+          btn.classList.remove('bg-white', 'text-slate-800', 'border-slate-200');
+          const hint = btn.querySelector('.key-hint');
+          if (hint) {
+            hint.classList.add('bg-slate-900', 'text-yellow-300', 'border-slate-900');
+            hint.classList.remove('bg-slate-100', 'text-slate-600');
+          }
+        } else {
+          btn.classList.remove('bg-amber-400', 'text-slate-950', 'border-red-600', 'ring-4', 'ring-amber-300', 'scale-110', 'z-10', 'shadow-xl');
+          btn.classList.add('bg-white', 'text-slate-800', 'border-slate-200');
+          const hint = btn.querySelector('.key-hint');
+          if (hint) {
+            hint.classList.remove('bg-slate-900', 'text-yellow-300', 'border-slate-900');
+            hint.classList.add('bg-slate-100', 'text-slate-600');
+          }
+        }
+      });
+
+      // 5. Append to Output Box if requested
+      if (appendToText) {
+        outputTextBox.value += data.char;
+        outputTextBox.scrollTop = outputTextBox.scrollHeight;
+      }
+
+      // 6. Speak Pronunciation
+      speakText(data.char);
+    }
+
+    // --- 6. KEYBOARD EVENT LISTENERS (InScript & Devanagari) ---
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target === inscriptModal) return;
+
+      const pressedKey = e.key;
+
+      // Handle Backspace
+      if (pressedKey === 'Backspace') {
+        e.preventDefault();
+        outputTextBox.value = outputTextBox.value.slice(0, -1);
+        return;
+      }
+
+      // Handle Space
+      if (pressedKey === ' ') {
+        e.preventDefault();
+        outputTextBox.value += ' ';
+        return;
+      }
+
+      // 1. Direct Devanagari Character check
+      if (CHAR_MAP[pressedKey]) {
+        e.preventDefault();
+        selectCharacter(pressedKey, true);
+        return;
+      }
+
+      // 2. QWERTY key mapped to InScript layout
+      if (EXTENDED_INSCRIPT_KEYS[pressedKey]) {
+        const mappedChar = EXTENDED_INSCRIPT_KEYS[pressedKey];
+        if (CHAR_MAP[mappedChar]) {
+          e.preventDefault();
+          selectCharacter(mappedChar, true);
+          return;
+        }
+      }
+    });
+
+    // --- 7. UI EVENT HANDLERS ---
+    btnPronounceCurrent.addEventListener('click', () => {
+      speakText(currentActiveChar);
+    });
+
+    btnSpeakAll.addEventListener('click', () => {
+      const text = outputTextBox.value.trim();
+      if (text) {
+        speakText(text);
+      }
+    });
+
+    btnCopyText.addEventListener('click', () => {
+      if (!outputTextBox.value) return;
+      navigator.clipboard.writeText(outputTextBox.value).then(() => {
+        copyToast.classList.remove('hidden');
+        setTimeout(() => copyToast.classList.add('hidden'), 2000);
+      }).catch(() => {
+        outputTextBox.select();
+        document.execCommand('copy');
+        copyToast.classList.remove('hidden');
+        setTimeout(() => copyToast.classList.add('hidden'), 2000);
+      });
+    });
+
+    btnBackspace.addEventListener('click', () => {
+      outputTextBox.value = outputTextBox.value.slice(0, -1);
+    });
+
+    btnClearText.addEventListener('click', () => {
+      outputTextBox.value = '';
+    });
+
+    btnVoiceToggle.addEventListener('click', () => {
+      voiceEnabled = !voiceEnabled;
+      if (voiceEnabled) {
+        voiceStatusText.textContent = 'उच्चारण: चालू';
+        voiceIcon.textContent = '🔊';
+        btnVoiceToggle.classList.remove('bg-rose-700');
+        btnVoiceToggle.classList.add('bg-emerald-600');
+      } else {
+        voiceStatusText.textContent = 'उच्चारण: बंद';
+        voiceIcon.textContent = '🔇';
+        btnVoiceToggle.classList.remove('bg-emerald-600');
+        btnVoiceToggle.classList.add('bg-rose-700');
+        window.speechSynthesis.cancel();
+      }
+    });
+
+    btnToggleKeyHints.addEventListener('click', () => {
+      showKeyHints = !showKeyHints;
+      keyHintStatusText.textContent = showKeyHints ? 'InScript कुंजियाँ: चालू' : 'InScript कुंजियाँ: बंद';
+      document.querySelectorAll('.key-hint').forEach(hint => {
+        if (showKeyHints) hint.classList.remove('hidden');
+        else hint.classList.add('hidden');
+      });
+    });
+
+    // Filter Tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => {
+          t.classList.remove('bg-indigo-600', 'text-white');
+          t.classList.add('bg-slate-100', 'text-slate-700');
+        });
+        tab.classList.add('bg-indigo-600', 'text-white');
+        tab.classList.remove('bg-slate-100', 'text-slate-700');
+
+        const filter = tab.dataset.filter;
+        const secSwar = document.getElementById('sec-swar');
+        const secSparsh = document.getElementById('sec-sparsh');
+        const secAntashtha = document.getElementById('sec-antashtha');
+        const secSanyukt = document.getElementById('sec-sanyukt');
+
+        if (filter === 'all') {
+          secSwar.style.display = 'block';
+          secSparsh.style.display = 'block';
+          secAntashtha.style.display = 'grid';
+          secSanyukt.style.display = 'block';
+        } else if (filter === 'swar') {
+          secSwar.style.display = 'block';
+          secSparsh.style.display = 'none';
+          secAntashtha.style.display = 'none';
+          secSanyukt.style.display = 'none';
+        } else if (filter === 'sparsh') {
+          secSwar.style.display = 'none';
+          secSparsh.style.display = 'block';
+          secAntashtha.style.display = 'none';
+          secSanyukt.style.display = 'none';
+        } else if (filter === 'antashtha') {
+          secSwar.style.display = 'none';
+          secSparsh.style.display = 'none';
+          secAntashtha.style.display = 'grid';
+          secSanyukt.style.display = 'none';
+        } else if (filter === 'sanyukt') {
+          secSwar.style.display = 'none';
+          secSparsh.style.display = 'none';
+          secAntashtha.style.display = 'none';
+          secSanyukt.style.display = 'block';
+        }
+      });
+    });
+
+    // InScript Guide Modal
+    btnOpenInscriptGuide.addEventListener('click', () => {
+      inscriptModal.classList.remove('hidden');
+    });
+    btnCloseInscriptGuide.addEventListener('click', () => {
+      inscriptModal.classList.add('hidden');
+    });
+    btnModalCloseSecondary.addEventListener('click', () => {
+      inscriptModal.classList.add('hidden');
+    });
+    inscriptModal.addEventListener('click', (e) => {
+      if (e.target === inscriptModal) {
+        inscriptModal.classList.add('hidden');
+      }
+    });
+
+    // Interactive Clicking directly on Vocal Tract Anatomy zones or the 6 Status Boxes
+    document.querySelectorAll('.organ-zone').forEach(zone => {
+      zone.addEventListener('click', () => {
+        const id = zone.id;
+        const found = VARNAMALA_DATA.find(d => d.organs.includes(id));
+        if (found) {
+          selectCharacter(found.char, true);
+        }
+      });
+    });
+
+    document.querySelectorAll('.organ-status-box').forEach(box => {
+      box.addEventListener('click', () => {
+        const zoneId = box.getAttribute('data-zone');
+        const found = VARNAMALA_DATA.find(d => d.organs.includes(zoneId));
+        if (found) {
+          selectCharacter(found.char, true);
+        }
+      });
+    });
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+      initSpeech();
+      populateGrids();
+      selectCharacter('क', false);
+    });
+  </script>
+</body>
+</html>
